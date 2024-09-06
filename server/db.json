@@ -1,0 +1,89 @@
+{
+  "users": [
+    {
+      "user_id": 1,
+      "username": "nguyendinhduong",
+      "email": "dinhduong@gmail.com",
+      "status": true,
+      "password": "12345678",
+      "role": 0,
+      "avatar": "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
+      "phone": "123456",
+      "address": "rudat"
+    },
+    {
+      "user_id": 2,
+      "username": "nguyendinhduong",
+      "email": "dinhduong@gmail.com",
+      "status": true,
+      "password": "12345678",
+      "role": 0,
+      "avatar": "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
+      "phone": "123456",
+      "address": "rudat"
+    },
+    {
+      "user_id": 3,
+      "username": "nguyễn đình dương",
+      "email": "hieu455âsas@gmail.com",
+      "avatar": "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
+      "role": 0,
+      "status": true,
+      "password": "741852963"
+    },
+    {
+      "user_id": 4,
+      "username": "phạm trung hiếu",
+      "email": "hieu455@gmail.com",
+      "avatar": "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
+      "role": 0,
+      "status": true,
+      "password": "789456123"
+    }
+  ],
+  "categorys": [
+    {
+      "category_id": 1,
+      "category_name": "Áo phông",
+      "description": "Bền đẹp, phù hợp mọi lứa tuổi",
+      "status": true
+    }
+  ],
+  "products": [
+    {
+      "product_id": 1,
+      "category_id": 1,
+      "image": "pdf",
+      "product_name": "Phông lạnh",
+      "description": "Bền đẹp, phù hợp mọi lứa tuổi",
+      "unit_price": 1000,
+      "stock_quantity": 100
+    }
+  ],
+  "orders": [
+    {
+      "order_id": 1,
+      "serial_number": "741852",
+      "user_id": 1,
+      "order_at": "06/09/2024",
+      "total_price": 2000,
+      "status": 1,
+      "order_details": [
+        "áo",
+        "quần"
+      ],
+      "receive_name": "đình dương",
+      "receive_address": "rú đât",
+      "receive_phone": "0825963741"
+    }
+  ],
+  "order_details": [
+    {
+      "order_detail_id": 1,
+      "product_id": 1,
+      "name": "áo phông",
+      "unit_price": 100,
+      "order_quantity": 2
+    }
+  ]
+}
