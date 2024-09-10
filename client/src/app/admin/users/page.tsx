@@ -1,49 +1,59 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import NewUserForm from "@/components/admin/FormNewUser";
-import { notification } from "antd";
+import { notification, Select } from "antd";
 import {
   deleteUser,
   getAllUsers,
   createUser,
+  updateUserRole,
+  toggleUserLock,
+  searchUsers,
+  sortUsers,
 } from "@/services/admin/manageUser";
 import { Users } from "@/interface/DataInter";
 
-export default function ManageUser() {
+const { Option } = Select;
+
+export default function QuanLyNguoiDung() {
   const [users, setUsers] = useState<Users[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [currentUserRole, setCurrentUserRole] = useState<number>(0); // Assume 0 for normal user, 1 for admin
 
   const fetchUsers = async () => {
     try {
       const response = await getAllUsers();
       setUsers(response);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Lỗi khi lấy danh sách người dùng:", error);
       notification.error({
-        message: "Failed to fetch users",
-        description: "An error occurred while fetching users.",
+        message: "Không thể lấy danh sách người dùng",
+        description: "Đã xảy ra lỗi khi lấy danh sách người dùng.",
       });
     }
   };
 
   useEffect(() => {
+    // Simulate fetching the current user's role
     fetchUsers();
   }, []);
 
-  const handleUserAdded = async (newUser: any) => {
+  const handleUserAdded = async (newUser: Users) => {
     try {
-      await createUser(newUser);
+      const createdUser = await createUser(newUser);
+      setUsers((prevUsers) => [...prevUsers, createdUser]);
       notification.success({
-        message: "User added successfully",
+        message: "Thêm mới thành công",
+        description: "Người dùng đã được thêm thành công.",
       });
-      fetchUsers();
       setModalVisible(false);
     } catch (error: any) {
       notification.error({
-        message: "Failed to add user",
-        description: error.message || "An error occurred.",
+        message: "Thêm người dùng thất bại",
+        description: error.message || "Đã xảy ra lỗi.",
       });
     }
   };
@@ -51,41 +61,93 @@ export default function ManageUser() {
   const handleDeleteUser = async (id: number) => {
     try {
       await deleteUser(id);
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
       notification.success({
-        message: "User deleted successfully",
+        message: "Xóa người dùng",
+        description: "Người dùng dã được xóa thành công.",
       });
-      fetchUsers();
     } catch (error: any) {
       notification.error({
-        message: "Failed to delete user",
-        description: error.message || "An error occurred.",
+        message: "Xóa người dùng thất bại",
+        description: error.message || "Đã xảy ra lỗi.",
       });
     }
   };
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+  const handleRoleChange = async (id: number, role: number) => {
+    try {
+      await updateUserRole(id, role);
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => (user.id === id ? { ...user, role } : user))
+      );
+      notification.success({
+        message: "Cập nhật vai trò thành công",
+      });
+    } catch (error: any) {
+      notification.error({
+        message: "Cập nhật vai trò thất bại",
+        description: error.message || "Đã xảy ra lỗi.",
+      });
+    }
   };
 
-  const handleSort = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortOrder(event.target.value);
+  const handleToggleLock = async (id: number) => {
+    try {
+      await toggleUserLock(id);
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === id ? { ...user, status: !user.status } : user
+        )
+      );
+      notification.success({
+        message: "Cập nhật trạng thái thành công",
+      });
+    } catch (error: any) {
+      notification.error({
+        message: "Cập nhật trạng thái thất bại",
+        description: error.message || "Đã xảy ra lỗi.",
+      });
+    }
   };
 
-  const filteredAndSortedUsers = users
-    .filter((user) =>
-      user.username.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (sortOrder === "asc") {
-        return a.username.localeCompare(b.username);
-      } else {
-        return b.username.localeCompare(a.username);
-      }
-    });
+  const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const query = event.target.value;
+    setSearchTerm(query);
+    try {
+      const result = await searchUsers(query);
+      setUsers(result);
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm người dùng:", error);
+      notification.error({
+        message: "Tìm kiếm người dùng thất bại",
+        description: "Đã xảy ra lỗi khi tìm kiếm người dùng.",
+      });
+    }
+  };
+
+  const handleSort = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const order = event.target.value;
+    setSortOrder(order);
+    try {
+      const result = await sortUsers(order, "username"); // Adjust field if needed
+      setUsers(result);
+    } catch (error) {
+      console.error("Lỗi khi sắp xếp người dùng:", error);
+      notification.error({
+        message: "Sắp xếp người dùng thất bại",
+        description: "Đã xảy ra lỗi khi sắp xếp người dùng.",
+      });
+    }
+  };
+
+  const filteredAndSortedUsers = users.filter((user) => {
+    if (currentUserRole === 1) return true; // Admin can see all users
+    return user.role === 0; // Non-admins see only regular users
+  });
 
   return (
     <>
-      <h1 className="text-2xl font-bold mb-4">Quản Lý người dùng</h1>
+      <h1 className="text-2xl font-bold mb-4">Quản Lý Người Dùng</h1>
       <div className="flex justify-between items-center mb-4">
         <button
           onClick={() => setModalVisible(true)}
@@ -127,7 +189,7 @@ export default function ManageUser() {
           {filteredAndSortedUsers.map((user, index) => (
             <tr
               className="hover:bg-gray-100 border-b border-gray-200 py-10"
-              key={user.user_id}
+              key={user.id}
             >
               <td className="py-3 px-6 text-center whitespace-nowrap">
                 {index + 1}
@@ -141,20 +203,30 @@ export default function ManageUser() {
                 />
               </td>
               <td className="py-3 px-6 text-center">
-                {user.role === 1 ? "Quản trị viên" : "Người dùng"}
-              </td>
-              <td className="py-3 px-6 text-center">
-                <span
-                  className={`${
-                    user.status ? "text-green-500" : "text-red-500"
-                  }`}
+                <Select
+                  value={user.role}
+                  onChange={(value) => handleRoleChange(user.id, value)}
+                  style={{ width: 140 }}
                 >
-                  {user.status ? "Hoạt động" : "Đã khóa"}
-                </span>
+                  <Option value={0}>Người dùng</Option>
+                  <Option value={1}>Quản trị viên</Option>
+                </Select>
               </td>
               <td className="py-3 px-6 text-center">
                 <button
-                  onClick={() => handleDeleteUser(user.user_id)}
+                  onClick={() => handleToggleLock(user.id)}
+                  className={`${
+                    user.status
+                      ? "text-green-500 hover:text-green-600"
+                      : "text-red-500 hover:text-red-600"
+                  }`}
+                >
+                  {user.status ? "Hoạt Động" : "Đã khóa"}
+                </button>
+              </td>
+              <td className="py-3 px-6 text-center">
+                <button
+                  onClick={() => handleDeleteUser(user.id)}
                   className="text-red-600 hover:text-red-700 ml-2"
                 >
                   Xóa

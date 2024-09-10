@@ -1,89 +1,116 @@
 {
   "users": [
     {
-      "user_id": 1,
-      "username": "nguyendinhduong",
-      "email": "dinhduong@gmail.com",
-      "status": true,
-      "password": "12345678",
-      "role": 0,
+      "username": "Nguyễn Đình Dương",
+      "email": "hieu@gmail.com",
       "avatar": "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
-      "phone": "123456",
-      "address": "rudat"
+      "role": 0,
+      "status": true,
+      "password": "741852963",
+      "id": 1
     },
     {
-      "user_id": 2,
-      "username": "nguyendinhduong",
-      "email": "dinhduong@gmail.com",
-      "status": true,
-      "password": "12345678",
-      "role": 0,
+      "username": "Lại Hoàng Nam",
+      "email": "hieu455âdfgas@gmail.com",
       "avatar": "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
-      "phone": "123456",
-      "address": "rudat"
+      "role": 1,
+      "status": true,
+      "password": "741852963",
+      "id": 2
     },
     {
-      "user_id": 3,
-      "username": "nguyễn đình dương",
+      "username": "Lại Hoàng Nam",
       "email": "hieu455âsas@gmail.com",
       "avatar": "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
-      "role": 0,
+      "role": 1,
       "status": true,
-      "password": "741852963"
+      "password": "741852963",
+      "id": 4
     },
     {
-      "user_id": 4,
-      "username": "phạm trung hiếu",
-      "email": "hieu455@gmail.com",
+      "username": "Lại Hoàng Nam",
+      "email": "namhth@gmail.com",
       "avatar": "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
       "role": 0,
       "status": true,
-      "password": "789456123"
+      "password": "741852963",
+      "id": 5
     }
   ],
   "categorys": [
     {
-      "category_id": 1,
-      "category_name": "Áo phông",
-      "description": "Bền đẹp, phù hợp mọi lứa tuổi",
-      "status": true
+      "nameCategory": "Yến Hồng",
+      "description": "Bổ sung sinh lực tăng sức đề kháng\n",
+      "id": 1
+    },
+    {
+      "nameCategory": "Yến Huyết",
+      "description": "Phù hợp với người lớn tuổi",
+      "id": 2
+    },
+    {
+      "nameCategory": "Yến Trắng",
+      "description": "Phù hợp cho trẻ nhỏ\n",
+      "id": 3
     }
   ],
   "products": [
     {
-      "product_id": 1,
-      "category_id": 1,
-      "image": "pdf",
-      "product_name": "Phông lạnh",
-      "description": "Bền đẹp, phù hợp mọi lứa tuổi",
-      "unit_price": 1000,
-      "stock_quantity": 100
-    }
-  ],
-  "orders": [
+      "name": "Hồng Yến Khánh Hòa",
+      "description": "Loại yến đã được nhặt sạch lông, bụi bẩn.",
+      "price": 1000000,
+      "stock": 100,
+      "image": null,
+      "categoryId": 1,
+      "id": 1
+    },
     {
-      "order_id": 1,
-      "serial_number": "741852",
-      "user_id": 1,
-      "order_at": "06/09/2024",
-      "total_price": 2000,
-      "status": 1,
-      "order_details": [
-        "áo",
-        "quần"
-      ],
-      "receive_name": "đình dương",
-      "receive_address": "rú đât",
-      "receive_phone": "0825963741"
-    }
-  ],
-  "order_details": [
+      "name": "Hồng Yến Đà Nẵng",
+      "description": "Yến đã qua xử lý, sạch sẽ và an toàn.",
+      "price": 1200000,
+      "stock": 80,
+      "image": null,
+      "categoryId": 1,
+      "id": 2
+    },
     {
-      "order_detail_id": 1,
-      "product_id": 1,
-      "name": "áo phông",
-      "unit_price": 100,
-      "order_quantity": 2
+      "name": "Yến Sào Nha Trang",
+      "description": "Yến sào chất lượng cao từ Nha Trang.",
+      "price": 1500000,
+      "stock": 50,
+      "image": null,
+      "categoryId": 1,
+      "id": 3
+    },
+    {
+      "name": "Yến Sào Phú Quốc",
+      "description": "Yến sào sạch, giàu dinh dưỡng từ Phú Quốc.",
+      "price": 1800000,
+      "stock": 70,
+      "image": null,
+      "categoryId": 1,
+      "id": 4
+    },
+    {
+      "name": "Yến Sào Hạ Long",
+      "description": "Sản phẩm yến sào chất lượng từ Hạ Long.",
+      "price": 1600000,
+      "stock": 60,
+      "image": null,
+      "categoryId": 1,
+      "id": 5
+    },
+    {
+      "name": "Yến Sào Cà Mau",
+      "description": "Yến sào sạch và ngon từ Cà Mau.",
+      "price": 1400000,
+      "stock": 90,
+      "image": null,
+      "categoryId": 1,
+      "id": 6
     }
   ]
+  ,
+  "orders": [],
+  "order_details": []
 }

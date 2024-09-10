@@ -1,47 +1,41 @@
 import baseUrl from "@/api";
 
-
+// Fetch all categories
 export const getAllCategorys = async () => {
   try {
     const response = await baseUrl.get("categorys");
-    return response;
+    return response.data;
   } catch (error) {
-    throw new Error(`Error fetching categorys: ${error}`);
+    throw new Error(`Error fetching categories: ${error}`);
   }
 };
 
+// Create a new category
 export const createCategory = async (category: any) => {
   try {
     const response = await baseUrl.post("categorys", category);
-    return response;
+    return response.data;
   } catch (error) {
-    throw new Error(`Error fetching categorys: ${error}`);
+    throw new Error(`Error creating category: ${error}`);
   }
 };
 
-export const getCategoryById = async (id: any) => {
-  try {
-    const response = await baseUrl.get(`categorys/${id}`);
-    return response;
-  } catch (error) {
-    throw new Error(`Error fetching categorys: ${error}`);
-  }
-};
-
-export const updateCategory = async (category: any) => {
-  try {
-    const response = await baseUrl.patch(`categorys/${category.id}`, category);
-    return response;
-  } catch (error) {
-    throw new Error(`Error fetching categorys: ${error}`);
-  }
-};
-
-export const deleteCategory = async (id: any) => {
+// Delete a category
+export const deleteCategory = async (id: number) => {
   try {
     const response = await baseUrl.delete(`categorys/${id}`);
-    return response;
+    return response.data;
+  } catch (error: any) {
+    throw new Error(`Error deleting category: ${error}`);
+  }
+};
+
+// Update a category
+export const updateCategory = async (id: number, updatedCategory: any) => {
+  try {
+    const response = await baseUrl.put(`categorys/${id}`, updatedCategory);
+    return response.data;
   } catch (error) {
-    throw new Error(`Error fetching categorys: ${error}`);
+    throw new Error(`Error updating category: ${error}`);
   }
 };

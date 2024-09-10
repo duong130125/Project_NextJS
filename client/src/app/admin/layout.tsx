@@ -65,25 +65,7 @@ export default function RootLayout({
             </li>
           </ul>
         </nav>
-        <main className="flex-grow p-6">
-          {/* <Routes>
-            <Route path="userAd" element={<ManageUser />}></Route>
-            <Route path="coursesAd" element={<ManageCourses />}></Route>
-            <Route
-              path="coursesAd/subjectAd/:id"
-              element={<ManageSubjects />}
-            ></Route>
-            <Route
-              path="coursesAd/subjectAd/examAd/:id"
-              element={<ManageExams />}
-            ></Route>
-            <Route
-              path="coursesAd/subjectAd/examAd/questionAd/:id"
-              element={<ManageQuestions />}
-            ></Route>
-          </Routes> */}
-          {children}
-        </main>
+        <main className="flex-grow p-6">{children}</main>
       </div>
       {/* {showLogoutModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300">

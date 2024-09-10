@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Form, Input, Button, notification } from "antd";
 import { UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
+import baseUrl from "@/api";
 
 const NewUserForm = ({
   setModalVisible,
@@ -12,9 +13,30 @@ const NewUserForm = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
+  const checkEmailExists = async (email: string) => {
+    try {
+      const response = await baseUrl.get(`users?email=${email}`);
+      // Kiểm tra nếu danh sách trả về không rỗng
+      return response.data.length > 0;
+    } catch (error: any) {
+      console.error("Không thể kiểm tra email:", error);
+      return false;
+    }
+  };
+
   const handleAddUser = async (values: any) => {
     setLoading(true);
     try {
+      const emailExists = await checkEmailExists(values.email);
+      if (emailExists) {
+        notification.error({
+          message: "Thêm mới thất bại",
+          description: "Email đã tồn tại. Vui lòng nhập email khác.",
+        });
+        setLoading(false);
+        return;
+      }
+
       const newUser = {
         username: values.username,
         email: values.email,
@@ -95,7 +117,7 @@ const NewUserForm = ({
               },
               {
                 min: 8,
-                message: "Mật khẩu phải có ít nhất 8 ký tự!",
+                message: "Mật khẩu không được quá ngắn!",
               },
             ]}
             hasFeedback
