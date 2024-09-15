@@ -29,21 +29,20 @@ export interface Products {
 
 export interface Orders {
     id: 1,
-      serial: string,
-      userId: number,
-      orderAt: string,
-      price: number,
-      status: number,
-      orderDetails: [],
-      userName: string,
-      address: string,
-      phone: string
+    userId: number,
+    priceAll: number,
+    status: boolean,
+    userName: string,
+    userAddress: string,
+    userPhone: string
 }
 
-export interface OrderDetails {
+export interface Carts{
     id: number,
+    userId: number,
     productId: number,
-    name: string,
+    image: string,
+    nameProduct: string,
     price: number,
     quantity: number
 }

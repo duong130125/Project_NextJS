@@ -121,6 +121,7 @@ export default function ManageCourses() {
         <thead>
           <tr>
             <th className="py-2 px-4 border-b">STT</th>
+            <th className="py-2 px-4 border-b">Ảnh</th>
             <th className="py-2 px-4 border-b">Tên Danh Mục</th>
             <th className="py-2 px-4 border-b">Mô Tả</th>
             <th className="py-2 px-4 border-b">Chức Năng</th>
@@ -134,6 +135,13 @@ export default function ManageCourses() {
               onClick={() => handleRowClick(category.id, category)}
             >
               <td className="py-2 px-4 border-b text-center">{index + 1}</td>
+              <td className="py-2 px-4 border-b text-center">
+                <img
+                  src={category.image}
+                  alt={category.nameCategory}
+                  className="w-16 h-16 object-cover"
+                />
+              </td>
               <td className="py-2 px-4 border-b text-center">
                 {category.nameCategory}
               </td>

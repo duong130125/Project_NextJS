@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Form, Input, Button, notification } from "antd";
 import { UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
 import baseUrl from "@/api";
+import bcrypt from "bcryptjs-react";
 
 const NewUserForm = ({
   setModalVisible,
@@ -37,6 +38,9 @@ const NewUserForm = ({
         return;
       }
 
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(values.password, salt);
+
       const newUser = {
         username: values.username,
         email: values.email,
@@ -44,7 +48,7 @@ const NewUserForm = ({
           "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
         role: 0,
         status: true,
-        password: values.password,
+        password: hashedPassword,
       };
 
       await onUserAdded(newUser);

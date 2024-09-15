@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Modal, InputNumber, Upload, message } from "antd";
 import { CameraFilled } from "@ant-design/icons";
 import { UploadChangeParam, UploadFile } from "antd/es/upload/interface";
@@ -7,7 +7,7 @@ interface ProductModalProps {
   isOpen: boolean;
   closeModal: () => void;
   handleSave: (product: ProductFormValues) => void;
-  initialData?: ProductFormValues | null; // Optional initial data for editing
+  initialData?: ProductFormValues | null;
 }
 
 interface ProductFormValues {
@@ -15,32 +15,39 @@ interface ProductFormValues {
   description: string;
   price: number;
   stock: number;
-  image?: File; // Optional image property
+  image?: string;
 }
 
 const AddProductModal: React.FC<ProductModalProps> = ({
   isOpen,
   closeModal,
   handleSave,
-  initialData, // Optional initial data for editing
+  initialData,
 }) => {
   const [form] = Form.useForm();
-  const [imageFile, setImageFile] = React.useState<any>(null);
+  const [imageFile, setImageFile] = useState<any>(null);
 
   useEffect(() => {
     if (isOpen && initialData) {
-      form.setFieldsValue(initialData); // Set initial values when editing
+      form.setFieldsValue(initialData);
+      setImageFile(initialData.image || null);
     } else {
       form.resetFields();
       setImageFile(null);
     }
   }, [isOpen, initialData, form]);
 
-  const handleImageChange = (info: UploadChangeParam<UploadFile>) => {
+  const handleImageChange = async (info: UploadChangeParam<UploadFile>) => {
     if (info.file.status === "done") {
-      setImageFile(info.file.originFileObj as File);
+      const file = info.file.originFileObj as File;
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageFile(reader.result as string);
+        message.success(`${info.file.name} file uploaded successfully`);
+      };
+      reader.readAsDataURL(file);
     } else if (info.file.status === "error") {
-      message.error("Failed to upload image");
+      message.error(`${info.file.name} file upload failed.`);
     }
   };
 
@@ -65,30 +72,32 @@ const AddProductModal: React.FC<ProductModalProps> = ({
       width={400}
     >
       <Form form={form} onFinish={onFinish} layout="vertical">
-        {/* <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-4">
           <Upload
             showUploadList={false}
-            beforeUpload={() => false}
+            beforeUpload={(file) => {
+              const isImage = file.type.startsWith("image/");
+              if (!isImage) {
+                message.error("You can only upload image files!");
+              }
+              return isImage || Upload.LIST_IGNORE;
+            }}
             onChange={handleImageChange}
             accept="image/*"
           >
-            {imageFile || initialData?.image ? (
+            {imageFile ? (
               <img
-                src={
-                  imageFile
-                    ? URL.createObjectURL(imageFile)
-                    : initialData?.image
-                }
+                src={imageFile}
                 alt="Product"
                 className="w-24 h-24 bg-gray-200 rounded-full object-cover"
               />
             ) : (
-              <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
-                <CameraFilled size={32} className="text-gray-400" />
+              <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
+                <CameraFilled className="text-gray-400 text-2xl" />
               </div>
             )}
           </Upload>
-        </div> */}
+        </div>
         <Form.Item
           name="name"
           rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm" }]}
@@ -105,13 +114,13 @@ const AddProductModal: React.FC<ProductModalProps> = ({
           name="price"
           rules={[{ required: true, message: "Vui lòng nhập đơn giá" }]}
         >
-          <InputNumber placeholder="Đơn giá" className="w-full" />
+          <InputNumber min={1} placeholder="Đơn giá" className="w-full" />
         </Form.Item>
         <Form.Item
           name="stock"
           rules={[{ required: true, message: "Vui lòng nhập tồn kho" }]}
         >
-          <InputNumber placeholder="Tồn kho" className="w-full" />
+          <InputNumber min={1} placeholder="Tồn kho" className="w-full" />
         </Form.Item>
         <Form.Item>
           <Button

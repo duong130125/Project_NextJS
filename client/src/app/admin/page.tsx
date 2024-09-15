@@ -1,5 +1,5 @@
 import React from "react";
 
 export default function page() {
-  return <div>page admin</div>;
+  return <div>Xin chào bạn đến với trang quản lý của chúng tôi</div>;
 }

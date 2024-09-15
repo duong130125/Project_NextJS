@@ -86,8 +86,7 @@ const ManageProducts = (props: any) => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Quản Lý Sản Phẩm</h1>
-
-      <div className="flex items-center justify-end space-x-2 mb-4">
+      <div className="flex justify-between items-center mb-4">
         <button
           onClick={() => {
             setIsModalOpen(true);
@@ -98,27 +97,29 @@ const ManageProducts = (props: any) => {
           Thêm Sản Phẩm
         </button>
 
-        <input
-          type="text"
-          className="py-2 px-4 bg-white border rounded-lg shadow-sm focus:outline-none"
-          placeholder="Tìm kiếm..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <select
-          className="py-2 px-4 bg-white border rounded-lg shadow-sm focus:outline-none"
-          onChange={(e) => {
-            const [min, max] = e.target.value.split("-");
-            setMinPrice(Number(min));
-            setMaxPrice(Number(max));
-          }}
-        >
-          <option value="0-Infinity">Tất cả giá</option>
-          <option value="0-100000">Dưới 100,000</option>
-          <option value="100000-500000">100,000 - 500,000</option>
-          <option value="500000-1000000">500,000 - 1,000,000</option>
-          <option value="1000000-Infinity">Trên 1,000,000</option>
-        </select>
+        <div className="flex items-center  space-x-2 mb-4">
+          <input
+            type="text"
+            className="py-2 px-4 bg-white border rounded-lg shadow-sm focus:outline-none"
+            placeholder="Tìm kiếm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select
+            className="py-2 px-4 bg-white border rounded-lg shadow-sm focus:outline-none"
+            onChange={(e) => {
+              const [min, max] = e.target.value.split("-");
+              setMinPrice(Number(min));
+              setMaxPrice(Number(max));
+            }}
+          >
+            <option value="0-Infinity">Tất cả giá</option>
+            <option value="0-100000">Dưới 100,000</option>
+            <option value="100000-500000">100,000 - 500,000</option>
+            <option value="500000-1000000">500,000 - 1,000,000</option>
+            <option value="1000000-Infinity">Trên 1,000,000</option>
+          </select>
+        </div>
       </div>
 
       <AddProductModal
@@ -156,7 +157,10 @@ const ManageProducts = (props: any) => {
                 {product.description}
               </td>
               <td className="py-2 px-4 border-b text-center">
-                {product.price}
+                {product.price.toLocaleString("vi", {
+                  style: "currency",
+                  currency: "VND",
+                })}
               </td>
               <td className="py-2 px-4 border-b text-center">
                 {product.stock}

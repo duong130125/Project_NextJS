@@ -2,8 +2,58 @@
 import { Form, Input, Button, notification } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import baseUrl from "@/api";
+import bcrypt from "bcryptjs-react";
 
 export default function Register() {
+  const router = useRouter();
+
+  const onFinish = async (values: any) => {
+    try {
+      // Check if the email already exists
+      const checkUser = await baseUrl.get(`users?email=${values.email}`);
+      if (checkUser.data.length > 0) {
+        notification.error({
+          message: "Đăng ký thất bại",
+          description: "Email đã được sử dụng. Vui lòng chọn email khác.",
+        });
+        return;
+      }
+
+      // Hash the password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(values.password, salt);
+
+      // Prepare the user data with hashed password
+      const userData = {
+        username: values.name,
+        email: values.email,
+        password: hashedPassword,
+        role: 0,
+        status: true,
+        avatar:
+          "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
+      };
+
+      // Send registration data to the server
+      await baseUrl.post("users", userData);
+
+      notification.success({
+        message: "Đăng ký thành công",
+        description: "Tài khoản của bạn đã được tạo. Vui lòng đăng nhập.",
+      });
+
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Có lỗi xảy ra khi đăng ký:", error);
+      notification.error({
+        message: "Đăng ký thất bại",
+        description: "Có lỗi xảy ra. Vui lòng thử lại sau.",
+      });
+    }
+  };
+
   return (
     <div className="gradient-custom flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
       <div className="flex shadow-lg rounded-lg overflow-hidden w-full max-w-xl mx-auto">
@@ -16,12 +66,7 @@ export default function Register() {
         </div>
         <div className="w-full md:w-2/3 p-6 bg-white">
           <h2 className="text-2xl font-bold mb-4">Đăng ký</h2>
-          <Form
-            // form={form}
-            name="register"
-            // onFinish={onFinish}
-            layout="vertical"
-          >
+          <Form name="register" onFinish={onFinish} layout="vertical">
             <Form.Item
               name="name"
               label="Họ và tên"
@@ -84,12 +129,7 @@ export default function Register() {
               />
             </Form.Item>
             <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="w-full"
-                // loading={loading}
-              >
+              <Button type="primary" htmlType="submit" className="w-full">
                 Đăng ký
               </Button>
             </Form.Item>

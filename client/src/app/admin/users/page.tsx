@@ -16,12 +16,70 @@ import { Users } from "@/interface/DataInter";
 
 const { Option } = Select;
 
+// Thành phần phân trang
+const Pagination: React.FC<{
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}> = ({ currentPage, totalPages, onPageChange }) => {
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  return (
+    <nav className="flex justify-center mt-4">
+      <ul className="inline-flex">
+        <li>
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-l-lg ${
+              currentPage === 1
+                ? "bg-gray-300 text-gray-600"
+                : "bg-white text-blue-500 hover:bg-blue-100"
+            } border border-gray-300`}
+          >
+            ‹
+          </button>
+        </li>
+        {pageNumbers.map((page) => (
+          <li key={page}>
+            <button
+              onClick={() => onPageChange(page)}
+              className={`px-3 py-1 ${
+                currentPage === page
+                  ? "bg-blue-500 text-white"
+                  : "bg-white text-blue-500 hover:bg-blue-100"
+              } border-t border-b border-gray-300`}
+            >
+              {page}
+            </button>
+          </li>
+        ))}
+        <li>
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-r-lg ${
+              currentPage === totalPages
+                ? "bg-gray-300 text-gray-600"
+                : "bg-white text-blue-500 hover:bg-blue-100"
+            } border border-gray-300`}
+          >
+            ›
+          </button>
+        </li>
+      </ul>
+    </nav>
+  );
+};
+
 export default function QuanLyNguoiDung() {
   const [users, setUsers] = useState<Users[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
-  const [currentUserRole, setCurrentUserRole] = useState<number>(0); // Assume 0 for normal user, 1 for admin
+  const [currentUserRole, setCurrentUserRole] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(10);
 
   const fetchUsers = async () => {
     try {
@@ -37,7 +95,6 @@ export default function QuanLyNguoiDung() {
   };
 
   useEffect(() => {
-    // Simulate fetching the current user's role
     fetchUsers();
   }, []);
 
@@ -64,7 +121,7 @@ export default function QuanLyNguoiDung() {
       setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
       notification.success({
         message: "Xóa người dùng",
-        description: "Người dùng dã được xóa thành công.",
+        description: "Người dùng đã được xóa thành công.",
       });
     } catch (error: any) {
       notification.error({
@@ -141,9 +198,20 @@ export default function QuanLyNguoiDung() {
   };
 
   const filteredAndSortedUsers = users.filter((user) => {
-    if (currentUserRole === 1) return true; // Admin can see all users
-    return user.role === 0; // Non-admins see only regular users
+    if (currentUserRole === 1) return true;
+    return user.role === 0;
   });
+
+  // Logic phân trang
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredAndSortedUsers.slice(
+    indexOfFirstUser,
+    indexOfLastUser
+  );
+
+  // Thay đổi trang
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <>
@@ -186,13 +254,13 @@ export default function QuanLyNguoiDung() {
           </tr>
         </thead>
         <tbody>
-          {filteredAndSortedUsers.map((user, index) => (
+          {currentUsers.map((user, index) => (
             <tr
               className="hover:bg-gray-100 border-b border-gray-200 py-10"
               key={user.id}
             >
               <td className="py-3 px-6 text-center whitespace-nowrap">
-                {index + 1}
+                {indexOfFirstUser + index + 1}
               </td>
               <td className="py-3 px-6 text-center">{user.username}</td>
               <td className="py-3 px-6 text-center">
@@ -236,6 +304,12 @@ export default function QuanLyNguoiDung() {
           ))}
         </tbody>
       </table>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(filteredAndSortedUsers.length / usersPerPage)}
+        onPageChange={paginate}
+      />
 
       {isModalVisible && (
         <NewUserForm

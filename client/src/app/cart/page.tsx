@@ -1,32 +1,77 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Footer from "@/layout/Footer";
-import Header from "@/layout/Header";
+import Footer from "@/app/layout/Footer";
+import Header from "@/app/layout/Header";
+import { getAllCarts } from "@/services/user/userCart";
 
 const ShoppingCart = () => {
-  const cartItems = [
-    {
-      id: 1,
-      name: "Samsung Galaxy S3",
-      quantity: 2,
-      price: 12000000,
-      image: "/samsung-s3.jpg",
-    },
-    {
-      id: 2,
-      name: "Apple iPhone 5 16GB",
-      quantity: 5,
-      price: 14890000,
-      image: "/iphone-5.jpg",
-    },
-    {
-      id: 3,
-      name: "Samsung Galaxy Tab 10.1 3G 16G",
-      quantity: 3,
-      price: 10990000,
-      image: "/samsung-tab.jpg",
-    },
-  ];
+  const [selectedItems, setSelectedItems] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const router = useRouter();
+  const [userId, setUserId] = useState<any>();
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("user");
+    if (storedUserId) {
+      setUserId(JSON.parse(storedUserId)?.id || null);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId !== null) {
+      const fetchCartItems = async () => {
+        try {
+          const products = await getAllCarts();
+          const filteredProducts = products.filter(
+            (item: any) => item.userId === userId
+          );
+          setCartItems(filteredProducts);
+        } catch (err) {
+          setError("Failed to load cart items");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchCartItems();
+    }
+  }, [userId]);
+
+  const handleCheckboxChange = (id: number) => {
+    setSelectedItems((prevState) => ({
+      ...prevState,
+      [id]: !prevState[id],
+    }));
+  };
+
+  const handleDeleteAll = () => {
+    // Logic to delete all selected items
+    console.log("Delete all selected items");
+  };
+
+  const handleCheckout = () => {
+    router.push("/order"); // Navigate to the order page
+  };
+
+  const totalAmount = cartItems.reduce(
+    (total, item) =>
+      total + item.price * item.quantity * (selectedItems[item.id] ? 1 : 0),
+    0
+  );
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -38,6 +83,9 @@ const ShoppingCart = () => {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Chọn
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   STT
                 </th>
@@ -64,6 +112,13 @@ const ShoppingCart = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {cartItems.map((item, index) => (
                 <tr key={item.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems[item.id] || false}
+                      onChange={() => handleCheckboxChange(item.id)}
+                    />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Image
@@ -74,15 +129,23 @@ const ShoppingCart = () => {
                       className="rounded-full"
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {item.nameProduct}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {item.quantity}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {item.price.toLocaleString()} đ
+                    {item.price.toLocaleString("vi", {
+                      style: "currency",
+                      currency: "VND",
+                    })}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {(item.price * item.quantity).toLocaleString()} đ
+                    {(item.price * item.quantity).toLocaleString("vi", {
+                      style: "currency",
+                      currency: "VND",
+                    })}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
@@ -92,6 +155,36 @@ const ShoppingCart = () => {
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr>
+                <td className="px-6 py-4 text-left">
+                  <button
+                    onClick={handleDeleteAll}
+                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Xóa tất cả
+                  </button>
+                </td>
+                <td
+                  colSpan={6}
+                  className="px-6 py-4 text-right font-bold text-xl"
+                >
+                  Tổng tiền:
+                  {totalAmount.toLocaleString("vi", {
+                    style: "currency",
+                    currency: "VND",
+                  })}
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <button
+                    onClick={handleCheckout}
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Mua hàng
+                  </button>
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </main>
