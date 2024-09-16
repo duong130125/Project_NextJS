@@ -11,7 +11,6 @@ import {
 import {
   CreditCardOutlined,
   CustomerServiceOutlined,
-  ShoppingCartOutlined,
   ShoppingOutlined,
 } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
@@ -163,7 +162,7 @@ export default function Page() {
                 {categories.map((category: any) => (
                   <li key={category.id} className="flex items-start space-x-4">
                     <img
-                      src={category.imageUrl}
+                      src={category.image}
                       alt={category.nameCategory}
                       className="w-16 h-16 object-cover rounded"
                     />

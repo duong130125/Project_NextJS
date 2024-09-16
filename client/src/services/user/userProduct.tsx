@@ -1,4 +1,3 @@
-// src/services/user/userProduct.ts
 import baseUrl from "@/api";
 import { Products } from "@/interface/DataInter";
 

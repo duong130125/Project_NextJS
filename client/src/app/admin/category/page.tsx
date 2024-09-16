@@ -10,6 +10,7 @@ import {
 } from "@/services/admin/manageCategory";
 import { Categorys } from "@/interface/DataInter";
 import CategoryForm from "@/components/admin/FormCategory";
+import Swal from "sweetalert2";
 
 export default function ManageCourses() {
   const [categories, setCategories] = useState([]);
@@ -42,15 +43,32 @@ export default function ManageCourses() {
   }, []);
 
   const handleDeleteCategory = async (id: number) => {
-    if (confirm("Bạn có chắc muốn xóa danh mục này?")) {
-      try {
-        await deleteCategory(id);
-        const response = await getAllCategorys();
-        setCategories(response);
-      } catch (err: any) {
-        setError(err);
-      }
-    }
+    Swal.fire({
+      title: "Xác nhận xóa",
+      text: "Bạn có chắc chắn muốn xóa danh mục này không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await deleteCategory(id);
+            const response = await getAllCategorys();
+            setCategories(response);
+            Swal.fire("Đã xóa!", "Danh mục đã được xóa.", "success");
+          } catch (err: any) {
+            setError(err);
+            Swal.fire("Lỗi!", "Đã xảy ra lỗi khi xóa danh mục.", "error");
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error showing confirmation modal:", error);
+      });
   };
 
   const handleEditCategory = (category: Categorys) => {

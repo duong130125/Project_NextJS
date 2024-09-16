@@ -13,6 +13,7 @@ import {
   sortUsers,
 } from "@/services/admin/manageUser";
 import { Users } from "@/interface/DataInter";
+import Swal from "sweetalert2";
 
 const { Option } = Select;
 
@@ -115,22 +116,38 @@ export default function QuanLyNguoiDung() {
     }
   };
 
-  const handleDeleteUser = async (id: number) => {
-    try {
-      await deleteUser(id);
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
-      notification.success({
-        message: "Xóa người dùng",
-        description: "Người dùng đã được xóa thành công.",
+  const handleDeleteUser = (id: number) => {
+    Swal.fire({
+      title: "Xác nhận xóa",
+      text: "Bạn có chắc chắn muốn xóa người dùng này không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await deleteUser(id);
+            setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
+            notification.success({
+              message: "Xóa người dùng",
+              description: "Người dùng đã được xóa thành công.",
+            });
+          } catch (error: any) {
+            notification.error({
+              message: "Xóa người dùng thất bại",
+              description: error.message || "Đã xảy ra lỗi.",
+            });
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error showing confirmation modal:", error);
       });
-    } catch (error: any) {
-      notification.error({
-        message: "Xóa người dùng thất bại",
-        description: error.message || "Đã xảy ra lỗi.",
-      });
-    }
   };
-
   const handleRoleChange = async (id: number, role: number) => {
     try {
       await updateUserRole(id, role);
@@ -186,7 +203,7 @@ export default function QuanLyNguoiDung() {
     const order = event.target.value;
     setSortOrder(order);
     try {
-      const result = await sortUsers(order, "username"); // Adjust field if needed
+      const result = await sortUsers(order, "username");
       setUsers(result);
     } catch (error) {
       console.error("Lỗi khi sắp xếp người dùng:", error);

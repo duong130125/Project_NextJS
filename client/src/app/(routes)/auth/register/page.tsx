@@ -11,7 +11,6 @@ export default function Register() {
 
   const onFinish = async (values: any) => {
     try {
-      // Check if the email already exists
       const checkUser = await baseUrl.get(`users?email=${values.email}`);
       if (checkUser.data.length > 0) {
         notification.error({
@@ -21,11 +20,9 @@ export default function Register() {
         return;
       }
 
-      // Hash the password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(values.password, salt);
 
-      // Prepare the user data with hashed password
       const userData = {
         username: values.name,
         email: values.email,
@@ -36,7 +33,6 @@ export default function Register() {
           "https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
       };
 
-      // Send registration data to the server
       await baseUrl.post("users", userData);
 
       notification.success({

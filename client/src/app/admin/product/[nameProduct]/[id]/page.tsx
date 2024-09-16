@@ -9,6 +9,62 @@ import {
   getAllProductsByCategory,
   updateProduct,
 } from "@/services/admin/manageProduct";
+import Swal from "sweetalert2";
+
+const Pagination: React.FC<{
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}> = ({ currentPage, totalPages, onPageChange }) => {
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  return (
+    <nav className="flex justify-center mt-4">
+      <ul className="inline-flex">
+        <li>
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-l-lg ${
+              currentPage === 1
+                ? "bg-gray-300 text-gray-600"
+                : "bg-white text-blue-500 hover:bg-blue-100"
+            } border border-gray-300`}
+          >
+            ‹
+          </button>
+        </li>
+        {pageNumbers.map((page) => (
+          <li key={page}>
+            <button
+              onClick={() => onPageChange(page)}
+              className={`px-3 py-1 ${
+                currentPage === page
+                  ? "bg-blue-500 text-white"
+                  : "bg-white text-blue-500 hover:bg-blue-100"
+              } border-t border-b border-gray-300`}
+            >
+              {page}
+            </button>
+          </li>
+        ))}
+        <li>
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-r-lg ${
+              currentPage === totalPages
+                ? "bg-gray-300 text-gray-600"
+                : "bg-white text-blue-500 hover:bg-blue-100"
+            } border border-gray-300`}
+          >
+            ›
+          </button>
+        </li>
+      </ul>
+    </nav>
+  );
+};
 
 const ManageProducts = (props: any) => {
   const { params } = props;
@@ -20,10 +76,12 @@ const ManageProducts = (props: any) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(Infinity);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(6);
 
   useEffect(() => {
     fetchProductsByCategory(Number(params.id));
-  }, [params, searchTerm, minPrice, maxPrice]);
+  }, [params, searchTerm, minPrice, maxPrice, currentPage]);
 
   const fetchProductsByCategory = async (categoryId: number) => {
     try {
@@ -44,13 +102,11 @@ const ManageProducts = (props: any) => {
   const handleAddProduct = async (product: any) => {
     try {
       if (editProduct) {
-        // Update product
         await updateProduct(editProduct.id, {
           ...product,
           categoryId: Number(params.id),
         });
       } else {
-        // Add new product
         await createProduct({
           ...product,
           categoryId: Number(params.id),
@@ -58,27 +114,53 @@ const ManageProducts = (props: any) => {
       }
       fetchProductsByCategory(Number(params.id));
       setIsModalOpen(false);
-      setEditProduct(null); // Reset editing state
+      setEditProduct(null);
     } catch (err) {
       setError("Failed to add/update product");
     }
   };
 
   const handleEditProduct = (product: Products) => {
-    setEditProduct(product); // Set product to edit
-    setIsModalOpen(true); // Open modal with product data
+    setEditProduct(product);
+    setIsModalOpen(true);
   };
 
   const handleDeleteProduct = async (id: number) => {
-    if (confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
-      try {
-        await deleteProduct(id);
-        fetchProductsByCategory(Number(params.id));
-      } catch (err) {
-        setError("Failed to delete product");
-      }
-    }
+    Swal.fire({
+      title: "Xác nhận xóa",
+      text: "Bạn có chắc chắn muốn xóa sản phẩm này không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await deleteProduct(id);
+            fetchProductsByCategory(Number(params.id));
+            Swal.fire("Đã xóa!", "Sản phẩm đã được xóa.", "success");
+          } catch (err) {
+            Swal.fire("Lỗi!", "Đã xảy ra lỗi khi xóa sản phẩm.", "error");
+            setError("Failed to delete product");
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error showing confirmation modal:", error);
+      });
   };
+
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = products.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   if (loading) return <div>Đang tải...</div>;
   if (error) return <div>Đã xảy ra lỗi: {error}</div>;
@@ -97,7 +179,7 @@ const ManageProducts = (props: any) => {
           Thêm Sản Phẩm
         </button>
 
-        <div className="flex items-center  space-x-2 mb-4">
+        <div className="flex items-center space-x-2 mb-4">
           <input
             type="text"
             className="py-2 px-4 bg-white border rounded-lg shadow-sm focus:outline-none"
@@ -142,9 +224,11 @@ const ManageProducts = (props: any) => {
           </tr>
         </thead>
         <tbody>
-          {products.map((product: Products, index: number) => (
+          {currentProducts.map((product: Products, index: number) => (
             <tr key={product.id}>
-              <td className="py-2 px-4 border-b text-center">{index + 1}</td>
+              <td className="py-2 px-4 border-b text-center">
+                {indexOfFirstProduct + index + 1}
+              </td>
               <td className="py-2 px-4 border-b text-center">{product.name}</td>
               <td className="py-2 px-4 border-b text-center">
                 <img
@@ -183,6 +267,12 @@ const ManageProducts = (props: any) => {
           ))}
         </tbody>
       </table>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(products.length / productsPerPage)}
+        onPageChange={paginate}
+      />
     </div>
   );
 };
