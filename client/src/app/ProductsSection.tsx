@@ -85,6 +85,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
   const [maxPrice, setMaxPrice] = useState(Infinity);
   const [filteredProducts, setFilteredProducts] =
     useState<Products[]>(products);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     const userId = localStorage.getItem("user");
@@ -94,15 +95,24 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
   }, []);
 
   useEffect(() => {
-    const filtered = products.filter(
+    let filtered = products.filter(
       (product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         product.price >= minPrice &&
         product.price <= maxPrice
     );
+
+    filtered.sort((a, b) => {
+      if (sortOrder === "asc") {
+        return a.price - b.price;
+      } else {
+        return b.price - a.price;
+      }
+    });
+
     setFilteredProducts(filtered);
     setCurrentPage(1);
-  }, [products, searchTerm, minPrice, maxPrice]);
+  }, [products, searchTerm, minPrice, maxPrice, sortOrder]);
 
   const handleAddToCart = async (product: Products) => {
     const cartItem = await getByIdProductandUser(product.id, id.id);
@@ -129,6 +139,10 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
         console.error("Failed to add product to cart", error);
       }
     }
+  };
+
+  const handleSort = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOrder(e.target.value as "asc" | "desc");
   };
 
   if (loading) {
@@ -172,6 +186,14 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
           <option value="100000-500000">100,000 - 500,000</option>
           <option value="500000-1000000">500,000 - 1,000,000</option>
           <option value="1000000-Infinity">Trên 1,000,000</option>
+        </select>
+        <select
+          className="py-2 px-4 bg-white border rounded-lg shadow-sm focus:outline-none"
+          value={sortOrder}
+          onChange={handleSort}
+        >
+          <option value="asc">Tăng dần</option>
+          <option value="desc">Giảm dần</option>
         </select>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

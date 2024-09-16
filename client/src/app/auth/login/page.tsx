@@ -169,7 +169,10 @@ export default function Login() {
           </div>
           <p className="mt-6 text-center text-gray-600">
             Chưa có tài khoản?{" "}
-            <Link href="/register" className="text-purple-500 hover:underline">
+            <Link
+              href="/auth/register"
+              className="text-purple-500 hover:underline"
+            >
               Đăng ký
             </Link>
           </p>

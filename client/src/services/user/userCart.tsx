@@ -53,3 +53,13 @@ export const updateCart = async (cart: any): Promise<Carts[]> => {
     throw new Error(`Failed to fetch users`);
   }
 };
+
+export const deleteCartItem = async (id: number) => {
+  try {
+    const response = await baseUrl.delete(`/carts/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting cart item: ${error}`);
+    throw new Error(`Failed to delete cart item`);
+  }
+};

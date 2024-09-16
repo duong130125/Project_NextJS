@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { Form, Input, Button, Select, Table, Spin, message } from "antd";
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import { Carts } from "@/interface/DataInter";
 import { getAllCarts } from "@/services/user/userCart";
+import { createOrder, deleteCart } from "@/services/user/userOrder";
 
 const { Option } = Select;
 
@@ -16,34 +19,83 @@ const CheckoutForm = () => {
   const [cartItems, setCartItems] = useState<Carts[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchCartData = async () => {
-      try {
-        const data = await getAllCarts();
-        setCartItems(data);
-      } catch (err) {
-        console.error("Error fetching cart data:", err);
-        setError("Failed to fetch cart data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCartData();
+    const storedUserId = localStorage.getItem("user");
+    if (storedUserId) {
+      setUserId(JSON.parse(storedUserId)?.id || null);
+    }
   }, []);
+
+  useEffect(() => {
+    if (userId !== null) {
+      const fetchCartItems = async () => {
+        try {
+          const products = await getAllCarts();
+          const filteredProducts = products.filter(
+            (item: any) => item.userId === userId
+          );
+          setCartItems(filteredProducts);
+        } catch (err) {
+          setError("Không thể tải giỏ hàng");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchCartItems();
+    }
+  }, [userId]);
 
   const handlePaymentMethodChange = (value: any) => {
     setPaymentMethod(value);
     setShowCardFields(value === "card");
   };
 
-  const handleFinish = (values: any) => {
-    console.log("Form values:", values);
-    // Handle form submission here
+  const handleFinish = async (values: any) => {
+    const result = await Swal.fire({
+      title: "Xác nhận đơn hàng",
+      text: "Bạn có chắc chắn muốn đặt đơn hàng này không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Xác nhận",
+      cancelButtonText: "Hủy",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const totalAmount: any = cartItems.reduce(
+          (total, item) => total + item.price * item.quantity,
+          0
+        );
+
+        const orderData = {
+          userId,
+          priceAll: totalAmount,
+          status: false,
+          method: paymentMethod,
+          userName: values.fullName,
+          userAddress: values.address,
+          userPhone: values.phoneNumber,
+        };
+
+        await createOrder(orderData);
+
+        for (const item of cartItems) {
+          await deleteCart(item.id);
+        }
+
+        message.success("Đơn hàng đã được xác nhận thành công!");
+        router.push("/");
+      } catch (err) {
+        message.error("Đã xảy ra lỗi khi xác nhận đơn hàng!");
+      }
+    }
   };
 
-  // Calculate total amount directly from cart items
   const totalAmount: any = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0
@@ -78,7 +130,7 @@ const CheckoutForm = () => {
         <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl font-extrabold text-gray-900 mb-8 text-center">
-              Checkout
+              Thanh Toán
             </h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="bg-white overflow-hidden shadow-sm rounded-lg">
@@ -209,7 +261,7 @@ const CheckoutForm = () => {
                         htmlType="submit"
                         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 ease-in-out"
                       >
-                        Xác nhận đơn hàng
+                        Xác nhận thanh toán
                       </Button>
                     </Form.Item>
                   </Form>
@@ -219,27 +271,22 @@ const CheckoutForm = () => {
               <div className="bg-white overflow-hidden shadow-sm rounded-lg">
                 <div className="p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    Tóm tắt đơn hàng
+                    Đơn hàng của bạn
                   </h2>
-                  <div className="overflow-x-auto">
-                    <Table
-                      dataSource={cartItems}
-                      columns={columns}
-                      pagination={false}
-                      size="small"
-                      className="mb-6"
-                    />
-                  </div>
-                  <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                    <span className="text-lg font-semibold text-gray-900">
-                      Tổng cộng:
-                    </span>
-                    <span className="text-2xl font-bold text-indigo-600">
-                      {totalAmount.toLocaleString("vi", {
+                  <Table
+                    dataSource={cartItems}
+                    columns={columns}
+                    pagination={false}
+                    rowKey="id"
+                  />
+                  <div className="text-right mt-4">
+                    <p className="text-lg font-semibold">
+                      Tổng cộng:{" "}
+                      {totalAmount.toLocaleString("vi-VN", {
                         style: "currency",
                         currency: "VND",
                       })}
-                    </span>
+                    </p>
                   </div>
                 </div>
               </div>

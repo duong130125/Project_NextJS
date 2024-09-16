@@ -5,12 +5,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Footer from "@/app/layout/Footer";
 import Header from "@/app/layout/Header";
-import { getAllCarts } from "@/services/user/userCart";
+import { getAllCarts, deleteCartItem } from "@/services/user/userCart";
 
 const ShoppingCart = () => {
-  const [selectedItems, setSelectedItems] = useState<{
-    [key: number]: boolean;
-  }>({});
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -43,25 +40,21 @@ const ShoppingCart = () => {
     }
   }, [userId]);
 
-  const handleCheckboxChange = (id: number) => {
-    setSelectedItems((prevState) => ({
-      ...prevState,
-      [id]: !prevState[id],
-    }));
-  };
-
-  const handleDeleteAll = () => {
-    // Logic to delete all selected items
-    console.log("Delete all selected items");
+  const handleDeleteItem = async (id: number) => {
+    try {
+      await deleteCartItem(id);
+      setCartItems(cartItems.filter((item) => item.id !== id));
+    } catch (error) {
+      setError("Failed to delete item");
+    }
   };
 
   const handleCheckout = () => {
-    router.push("/order"); // Navigate to the order page
+    router.push("/order");
   };
 
   const totalAmount = cartItems.reduce(
-    (total, item) =>
-      total + item.price * item.quantity * (selectedItems[item.id] ? 1 : 0),
+    (total, item) => total + item.price * item.quantity,
     0
   );
 
@@ -83,9 +76,6 @@ const ShoppingCart = () => {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Chọn
-                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   STT
                 </th>
@@ -112,20 +102,13 @@ const ShoppingCart = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {cartItems.map((item, index) => (
                 <tr key={item.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
-                      checked={selectedItems[item.id] || false}
-                      onChange={() => handleCheckboxChange(item.id)}
-                    />
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Image
                       src={item.image}
                       alt={item.name}
-                      width={50}
-                      height={50}
+                      width={60}
+                      height={60}
                       className="rounded-full"
                     />
                   </td>
@@ -148,7 +131,10 @@ const ShoppingCart = () => {
                     })}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                    <button
+                      className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                      onClick={() => handleDeleteItem(item.id)}
+                    >
                       Xóa
                     </button>
                   </td>
@@ -157,19 +143,11 @@ const ShoppingCart = () => {
             </tbody>
             <tfoot>
               <tr>
-                <td className="px-6 py-4 text-left">
-                  <button
-                    onClick={handleDeleteAll}
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-                  >
-                    Xóa tất cả
-                  </button>
-                </td>
                 <td
                   colSpan={6}
                   className="px-6 py-4 text-right font-bold text-xl"
                 >
-                  Tổng tiền:
+                  Tổng tiền: {""}
                   {totalAmount.toLocaleString("vi", {
                     style: "currency",
                     currency: "VND",
@@ -178,7 +156,12 @@ const ShoppingCart = () => {
                 <td className="px-6 py-4 text-right">
                   <button
                     onClick={handleCheckout}
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded"
+                    disabled={cartItems.length === 0}
+                    className={`font-bold py-2 px-4 rounded ${
+                      cartItems.length === 0
+                        ? "bg-gray-500 cursor-not-allowed"
+                        : "bg-orange-500 hover:bg-orange-600"
+                    } text-white`}
                   >
                     Mua hàng
                   </button>

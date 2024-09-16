@@ -3,11 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { HeartFilled, PhoneFilled } from "@ant-design/icons";
 import { FiRefreshCcw } from "react-icons/fi";
-import { Products } from "@/interface/DataInter";
 import { getAllProductDetail } from "@/services/user/userProduct";
 import Header from "@/app/layout/Header";
 import Footer from "@/app/layout/Footer";
-import { useParams } from "next/navigation";
 
 const ProductDetail = (props: any) => {
   const { params } = props;

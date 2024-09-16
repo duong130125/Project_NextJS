@@ -1,7 +1,6 @@
 import baseUrl from "@/api";
 import { Users } from "@/interface/DataInter";
 
-// Fetch all users
 export const getAllUsers = async (): Promise<Users[]> => {
   try {
     const response = await baseUrl.get("users");
@@ -12,7 +11,6 @@ export const getAllUsers = async (): Promise<Users[]> => {
   }
 };
 
-// Create a new user
 export const createUser = async (newUser: Users): Promise<Users> => {
   try {
     const response = await baseUrl.post("users", newUser);
@@ -23,7 +21,7 @@ export const createUser = async (newUser: Users): Promise<Users> => {
   }
 };
 
-// Delete a user by ID
+
 export const deleteUser = async (id: number) => {
   try {
     const response = await baseUrl.delete(`users/${id}`);
@@ -34,7 +32,6 @@ export const deleteUser = async (id: number) => {
   }
 };
 
-// Update user role
 export const updateUserRole = async (id: number, role: number): Promise<void> => {
   try {
     const response = await baseUrl.patch(`users/${id}`, { role });
@@ -45,7 +42,6 @@ export const updateUserRole = async (id: number, role: number): Promise<void> =>
   }
 };
 
-// Toggle user lock/unlock status
 export const toggleUserLock = async (id: number): Promise<void> => {
   try {
     const userResponse = await baseUrl.get(`users/${id}`);
@@ -58,12 +54,11 @@ export const toggleUserLock = async (id: number): Promise<void> => {
   }
 };
 
-// Search users
 export const searchUsers = async (query: string): Promise<Users[]> => {
   try {
     const response = await baseUrl.get(`users`, {
       params: {
-        username_like: query // Adjust parameter based on your API
+        username_like: query 
       }
     });
     return response.data;
@@ -73,7 +68,6 @@ export const searchUsers = async (query: string): Promise<Users[]> => {
   }
 };
 
-// Sort users
 export const sortUsers = async (order: string, field: string): Promise<Users[]> => {
   try {
     const response = await baseUrl.get(`users`, {
