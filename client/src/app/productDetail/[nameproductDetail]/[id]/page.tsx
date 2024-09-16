@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { HeartFilled, PhoneFilled } from "@ant-design/icons";
 import { FiRefreshCcw } from "react-icons/fi";
-import { getAllProductDetail } from "@/services/user/userProduct";
+import { addFavorite, getAllProductDetail } from "@/services/user/userProduct";
+
 import Header from "@/app/layout/Header";
 import Footer from "@/app/layout/Footer";
 
@@ -30,6 +31,18 @@ const ProductDetail = (props: any) => {
 
     fetchProduct();
   }, [params]);
+
+  const handleFavorite = async () => {
+    try {
+      if (!liked && product) {
+        await addFavorite(product);
+        setLiked(true);
+      }
+    } catch (err) {
+      console.error("Error handling favorite:", err);
+      setError("Failed to save favorite");
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -102,7 +115,7 @@ const ProductDetail = (props: any) => {
                   className={`border-0 p-2 rounded ${
                     liked ? "text-red-500" : "text-gray-500"
                   }`}
-                  onClick={() => setLiked(!liked)}
+                  onClick={handleFavorite}
                 >
                   <HeartFilled />
                 </button>

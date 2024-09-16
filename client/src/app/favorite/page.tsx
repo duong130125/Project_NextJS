@@ -1,46 +1,56 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { HeartFilled, DeleteOutlined } from "@ant-design/icons";
-import { Card, List, Button, Typography } from "antd";
+import { Card, List, Button, Typography, Spin, Alert, message } from "antd";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
+import {
+  getFavorite,
+  deleteFavoriteProduct,
+} from "@/services/user/userProduct";
 
 const { Title, Text } = Typography;
 
 const FavoriteProductsList = () => {
-  const [favoriteProducts, setFavoriteProducts] = useState([
-    {
-      id: 1,
-      name: "Áo thun",
-      price: 200000,
-      image: "/api/placeholder/150/150",
-    },
-    {
-      id: 2,
-      name: "Quần jeans",
-      price: 500000,
-      image: "/api/placeholder/150/150",
-    },
-    {
-      id: 3,
-      name: "Giày sneaker",
-      price: 800000,
-      image: "/api/placeholder/150/150",
-    },
-  ]);
+  const [favoriteProducts, setFavoriteProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const removeFromFavorites = (id: any) => {
-    setFavoriteProducts(
-      favoriteProducts.filter((product) => product.id !== id)
-    );
+  useEffect(() => {
+    const fetchFavoriteProducts = async () => {
+      try {
+        const data = await getFavorite();
+        setFavoriteProducts(data);
+      } catch (err: any) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFavoriteProducts();
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteFavoriteProduct(id);
+      setFavoriteProducts(
+        favoriteProducts.filter((product: any) => product.id !== id)
+      );
+      message.success("Sản phẩm đã được xóa khỏi trang yêu thích");
+    } catch (err: any) {
+      message.error("Xóa sản phẩm khỏi yêu thích không thành công");
+    }
   };
 
   return (
     <>
-      <Header></Header>
+      <Header />
       <div style={{ padding: "24px" }}>
         <Title level={2}>Sản phẩm yêu thích</Title>
+        {loading && <Spin size="large" />}
+        {error && <Alert message={error} type="error" showIcon />}
         <List
           grid={{
             gutter: 16,
@@ -52,7 +62,7 @@ const FavoriteProductsList = () => {
             xxl: 3,
           }}
           dataSource={favoriteProducts}
-          renderItem={(product) => (
+          renderItem={(product: any) => (
             <List.Item>
               <Card
                 cover={
@@ -70,7 +80,7 @@ const FavoriteProductsList = () => {
                   <Button
                     type="text"
                     icon={<DeleteOutlined />}
-                    onClick={() => removeFromFavorites(product.id)}
+                    onClick={() => handleDelete(product.id)}
                   />,
                 ]}
               >
@@ -78,7 +88,10 @@ const FavoriteProductsList = () => {
                   title={product.name}
                   description={
                     <Text type="danger" strong>
-                      {product.price.toLocaleString("vi-VN")} đ
+                      {product.price.toLocaleString("vi", {
+                        style: "currency",
+                        currency: "VND",
+                      })}
                     </Text>
                   }
                 />
@@ -87,7 +100,7 @@ const FavoriteProductsList = () => {
           )}
         />
       </div>
-      <Footer></Footer>
+      <Footer />
     </>
   );
 };

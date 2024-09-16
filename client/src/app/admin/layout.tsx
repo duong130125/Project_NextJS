@@ -22,7 +22,14 @@ export default function RootLayout({
 
   useEffect(() => {
     const user = localStorage.getItem("user");
-    if (!user) {
+    if (user) {
+      const userData = JSON.parse(user); // Parse JSON để lấy dữ liệu người dùng
+      if (userData.role === 0) {
+        // Nếu role bằng 0, chuyển hướng về trang chủ
+        router.push("/");
+      }
+    } else {
+      // Nếu không có thông tin người dùng, chuyển hướng tới trang đăng nhập
       router.push("/auth/login");
     }
   }, [router]);
