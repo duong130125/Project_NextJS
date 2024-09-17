@@ -1,34 +1,72 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Footer from "../layout/Footer";
 import Header from "../layout/Header";
+import { getUserApi, updateUserApi } from "@/services/user/userProfile";
 
 export default function UserPage() {
-  const [isEditing, setIsEditing] = useState(false); // Control edit modal
-  const [user, setUser] = useState<any>(
-    JSON.parse(String(localStorage.getItem("user")))
-  );
-  const [updatedUser, setUpdatedUser] = useState(user);
+  const [isEditing, setIsEditing] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [updatedUser, setUpdatedUser] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const maskEmail = (email: any) => {
+  useEffect(() => {
+    // Tải dữ liệu người dùng khi component được render lần đầu
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        const storedUser = JSON.parse(String(localStorage.getItem("user")));
+        const data = await getUserApi(storedUser.id);
+        setUser(data);
+        setUpdatedUser(data); // Khởi tạo trạng thái chỉnh sửa
+      } catch (error: any) {
+        setError(error.message || "Đã xảy ra lỗi khi tải người dùng.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const maskEmail = (email: string) => {
     const [name, domain] = email.split("@");
-    return `${name.substring(0, 3)}${"*".repeat(name.length - 1)}@${domain}`;
+    return `${name.substring(0, 3)}${"*".repeat(name.length - 3)}@${domain}`;
   };
 
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
+  const handleEditClick = () => setIsEditing(true);
 
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUpdatedUser({ ...updatedUser, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    localStorage.setItem("user", JSON.stringify(updatedUser)); // Save updated user to localStorage
-    setUser(updatedUser); // Update the user state
-    setIsEditing(false); // Close the modal
+  const handleSave = async () => {
+    setLoading(true);
+    setError(null);
+
+    // Cập nhật trạng thái ngay lập tức
+    setUser(updatedUser);
+
+    try {
+      await updateUserApi(user.id, updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser)); // Cập nhật localStorage
+      setIsEditing(false);
+    } catch (error: any) {
+      setError(error.message || "Đã xảy ra lỗi khi cập nhật.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading && !user) {
+    return <p>Đang tải dữ liệu...</p>;
+  }
+
+  if (!user) {
+    return <p>Không tìm thấy dữ liệu người dùng.</p>;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5e7d3]">
@@ -86,6 +124,7 @@ export default function UserPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full">
             <h2 className="text-2xl font-bold mb-6">Chỉnh sửa hồ sơ</h2>
+            {error && <p className="text-red-500 mb-4">{error}</p>}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-600">
                 Tên người dùng:
@@ -132,8 +171,9 @@ export default function UserPage() {
               <button
                 onClick={handleSave}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md"
+                disabled={loading}
               >
-                Lưu
+                {loading ? "Đang lưu..." : "Lưu"}
               </button>
             </div>
           </div>

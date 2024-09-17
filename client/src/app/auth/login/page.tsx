@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Form, Input, Button, Checkbox, notification, Modal } from "antd";
+import { Form, Input, Button, Checkbox, notification } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import bcrypt from "bcryptjs-react";
+import Swal from "sweetalert2";
 import { Users } from "@/interface/DataInter";
 import baseUrl from "@/api";
 
@@ -14,7 +15,6 @@ export default function Login() {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
   const [users, setUsers] = useState<Users[]>([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -41,7 +41,16 @@ export default function Login() {
         );
         if (passwordMatch) {
           if (user.status === false) {
-            setIsModalVisible(true);
+            Swal.fire({
+              title: "Tài khoản bị khóa",
+              text: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin để biết thêm chi tiết.",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#00EE00",
+              cancelButtonColor: "#696969",
+              confirmButtonText: "Đồng ý",
+              cancelButtonText: "Hủy",
+            });
           } else {
             const userInfo = {
               id: user.id,
@@ -178,17 +187,6 @@ export default function Login() {
           </p>
         </div>
       </div>
-      <Modal
-        title="Tài khoản bị khóa"
-        open={isModalVisible}
-        onOk={() => setIsModalVisible(false)}
-        onCancel={() => setIsModalVisible(false)}
-      >
-        <p>
-          Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin để biết thêm chi
-          tiết.
-        </p>
-      </Modal>
     </div>
   );
 }
